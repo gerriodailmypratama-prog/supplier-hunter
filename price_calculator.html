@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Price Calculator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; padding: 16px; }
+
+  .header { text-align: center; padding: 20px 0 24px; }
+  .header h1 { font-size: 22px; font-weight: 900; color: #ff6b35; letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: #555; margin-top: 4px; }
+
+  .card { background: #1a1a2e; border-radius: 14px; padding: 18px; margin-bottom: 14px; border: 1px solid #2a2a4a; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .card + .card { margin-top: 0; }
+  .card-title { font-size: 11px; color: #ff6b35; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 14px; }
+
+  .input-row { margin-bottom: 13px; }
+  .input-row:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; color: #777; margin-bottom: 5px; }
+  .input-wrap { position: relative; }
+  .input-wrap .prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #555; font-weight: 600; pointer-events: none; }
+  .input-wrap .suffix { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: #555; pointer-events: none; }
+  input[type=number] { width: 100%; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 9px; padding: 11px 12px; color: #e0e0e0; font-size: 16px; outline: none; font-family: inherit; transition: border 0.15s; -moz-appearance: textfield; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type=number]:focus { border-color: #ff6b35; }
+  .has-prefix input { padding-left: 32px; }
+  .has-suffix input { padding-right: 40px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Toggle buttons (disc & margin) */
+  .disc-row { display: flex; gap: 8px; }
+  .disc-btn { flex: 1; padding: 11px 4px; border: 1px solid #2a2a4a; border-radius: 9px; background: #0f0f1a; color: #666; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .disc-btn.active { border-color: #ff6b35; background: rgba(255,107,53,0.14); color: #ff6b35; }
+  .margin-quick { display: flex; gap: 6px; margin-top: 10px; }
+  .mq-btn { flex: 1; padding: 8px 4px; border: 1px solid #2a2a4a; border-radius: 8px; background: #0f0f1a; color: #666; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .mq-btn.active { border-color: #22c55e; background: rgba(34,197,94,0.12); color: #22c55e; }
+
+  /* Results */
+  .result-card { background: #1a1a2e; border-radius: 14px; padding: 18px; margin-bottom: 14px; border: 1px solid #2a2a4a; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid #1e1e38; }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { font-size: 13px; color: #777; }
+  .result-label small { display: block; font-size: 11px; color: #444; margin-top: 2px; }
+  .result-val { font-size: 16px; font-weight: 800; color: #fff; }
+  .result-val.orange { color: #ff6b35; }
+  .result-val.green { color: #22c55e; }
+  .result-val.blue { color: #60a5fa; }
+  .result-val.yellow { color: #f59e0b; }
+
+  .hl-label { font-size: 13px; color: #aaa; }
+  .hl-label span { display: block; font-size: 11px; color: #555; margin-top: 3px; }
+  .hl-val { font-size: 24px; font-weight: 900; color: #ff6b35; }
+  /* Highlight box */
+  .highlight-box { background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,107,53,0.03)); border: 1px solid rgba(255,107,53,0.3); border-radius: 12px; padding: 16px 18px; margin: 14px auto; max-width: 480px; display: flex; justify-content: space-between; align-items: center; }
+  .highlight-box .hl-label { font-size: 13px; color: #aaa; }
+  .highlight-box .hl-label span { display: block; font-size: 11px; color: #555; margin-top: 3px; }
+  .highlight-box .hl-val { font-size: 24px; font-weight: 900; color: #ff6b35; }
+
+  .profit-box { background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.02)); border: 1px solid rgba(34,197,94,0.25); border-radius: 12px; padding: 16px 18px; margin: 0 auto 14px; max-width: 480px; display: flex; justify-content: space-between; align-items: center; }
+  .profit-box .hl-label { font-size: 13px; color: #aaa; }
+  .profit-box .hl-label span { display: block; font-size: 11px; color: #555; margin-top: 3px; }
+  .profit-box .hl-val { font-size: 24px; font-weight: 900; color: #22c55e; }
+
+  .empty-state { text-align: center; padding: 30px 20px; color: #333; font-size: 14px; max-width: 480px; margin: 0 auto; }
+
+  .divider { height: 1px; background: #1e1e38; margin: 4px 0; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+  /* Kurs indicator */
+  .kurs-badge { display: inline-block; background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.25); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #60a5fa; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧮 Price Calculator</h1>
+  <p>Fashion Buyer · China Market</p>
+</div>
+
+<!-- INPUT SECTION -->
+<div class="card" style="margin-bottom:10px">
+  <div class="card-title">💱 Kurs Hari Ini</div>
+  <div class="input-row">
+    <label>1 CNY = berapa Rupiah?</label>
+    <div class="input-wrap has-suffix">
+      <input type="number" id="kurs" placeholder="2550" value="2550" oninput="calc()">
+      <span class="suffix">IDR</span>
+    </div>
+    <div class="kurs-badge" id="kurs-badge">1 CNY = Rp2,550</div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:10px;margin-top:10px">
+  <div class="card-title">📦 Modal & Ongkir</div>
+  <div class="two-col">
+    <div class="input-row">
+      <label>Harga Modal</label>
+      <div class="input-wrap has-prefix">
+        <span class="prefix">¥</span>
+        <input type="number" id="modal-cny" placeholder="30" oninput="calc()">
+      </div>
+    </div>
+    <div class="input-row">
+      <label>Estimasi Ongkir/Item</label>
+      <div class="input-wrap has-prefix">
+        <span class="prefix" style="font-size:11px">Rp</span>
+        <input type="number" id="ongkir" placeholder="15000" oninput="calc()" style="padding-left:38px">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:10px;margin-bottom:10px">
+  <div class="card-title">📈 Target Margin Bersih Lo</div>
+  <div class="input-row">
+    <label>Margin % (diluar MP fee 22%)</label>
+    <div class="input-wrap has-suffix">
+      <input type="number" id="margin-input" value="25" min="1" max="99" oninput="onMarginInput()">
+      <span class="suffix">%</span>
+    </div>
+  </div>
+  <div class="margin-quick">
+    <div class="mq-btn" id="mq-20" onclick="setMargin(20)">20%</div>
+    <div class="mq-btn active" id="mq-25" onclick="setMargin(25)">25%</div>
+    <div class="mq-btn" id="mq-30" onclick="setMargin(30)">30%</div>
+    <div class="mq-btn" id="mq-35" onclick="setMargin(35)">35%</div>
+    <div class="mq-btn" id="mq-40" onclick="setMargin(40)">40%</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:10px;margin-bottom:10px">
+  <div class="card-title">🏷️ Diskon Tampil ke Customer</div>
+  <div class="disc-row">
+    <div class="disc-btn active" id="disc-15" onclick="setDisc(15)">15% OFF</div>
+    <div class="disc-btn" id="disc-20" onclick="setDisc(20)">20% OFF</div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="result-area">
+  <div class="empty-state">← Isi modal & ongkir dulu</div>
+</div>
+
+<script>
+let discPct = 15;
+let marginPct = 25;
+const MP_FEE = 0.22;
+
+function fmt(n) {
+  return 'Rp' + Math.round(n).toLocaleString('id-ID');
+}
+
+function setDisc(d) {
+  discPct = d;
+  document.getElementById('disc-15').classList.toggle('active', d===15);
+  document.getElementById('disc-20').classList.toggle('active', d===20);
+  calc();
+}
+
+function setMargin(m) {
+  marginPct = m;
+  document.getElementById('margin-input').value = m;
+  [20,25,30,35,40].forEach(v => {
+    document.getElementById('mq-'+v).classList.toggle('active', v===m);
+  });
+  calc();
+}
+
+function onMarginInput() {
+  marginPct = parseFloat(document.getElementById('margin-input').value) || 25;
+  [20,25,30,35,40].forEach(v => {
+    document.getElementById('mq-'+v).classList.toggle('active', v===marginPct);
+  });
+  calc();
+}
+
+function calc() {
+  const kurs = parseFloat(document.getElementById('kurs').value) || 0;
+  const modalCNY = parseFloat(document.getElementById('modal-cny').value) || 0;
+  const ongkir = parseFloat(document.getElementById('ongkir').value) || 0;
+
+  // Update kurs badge
+  document.getElementById('kurs-badge').textContent = '1 CNY = Rp' + kurs.toLocaleString('id-ID');
+
+  if(!modalCNY || !kurs) {
+    document.getElementById('result-area').innerHTML = '<div class="empty-state">← Isi harga modal CNY dulu</div>';
+    return;
+  }
+
+  const modalIDR = modalCNY * kurs;
+  const hpp = modalIDR + ongkir;
+
+  const divisor = 1 - MP_FEE - (marginPct/100);
+  const selling = hpp / divisor;
+
+  const mpFeeRp = selling * MP_FEE;
+  const netProfit = selling * (marginPct/100);
+  // Tampil = harga yang customer bayar = Selling × (1 - disc%)
+  const tampilFinal = Math.round(selling * (1 - discPct/100) / 100) * 100;
+
+  document.getElementById('result-area').innerHTML = `
+    <div class="result-card" style="margin-top:10px">
+      <div class="card-title">📊 Breakdown HPP</div>
+      <div class="result-row">
+        <div class="result-label">Modal CNY<small>¥${modalCNY} × Rp${kurs.toLocaleString('id-ID')}</small></div>
+        <div class="result-val">${fmt(modalIDR)}</div>
+      </div>
+      <div class="result-row">
+        <div class="result-label">Ongkir / Item</div>
+        <div class="result-val">${fmt(ongkir)}</div>
+      </div>
+      <div class="result-row">
+        <div class="result-label" style="color:#fff;font-weight:700">Final HPP</div>
+        <div class="result-val orange">${fmt(hpp)}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:480px;margin:10px auto 0">
+      <div class="highlight-box" style="margin:0;flex-direction:column;align-items:flex-start;gap:4px">
+        <div class="hl-label">Harga Selling<span>Sebelum disc</span></div>
+        <div class="hl-val" style="font-size:20px">${fmt(selling)}</div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(96,165,250,0.08),rgba(96,165,250,0.02));border:1px solid rgba(96,165,250,0.3);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+        <div class="hl-label">Harga Coret <span>Disc ${discPct}%</span></div>
+        <div class="hl-val" style="font-size:20px;color:#60a5fa">${fmt(tampilFinal)}</div>
+      </div>
+    </div>
+
+    <div class="profit-box" style="margin-top:10px">
+      <div class="hl-label">💰 Profit per Item<span>${marginPct}% bersih setelah MP fee</span></div>
+      <div class="hl-val">${fmt(netProfit)}</div>
+    </div>
+  `;
+}
+
+// Init
+calc();
+</script>
+</body>
+</html>
